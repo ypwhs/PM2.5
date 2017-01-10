@@ -33,8 +33,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
-#include "dma.h"
 #include "i2c.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -67,11 +67,96 @@ int fputc(int ch, FILE *f)
   return ch;
 }
 
-int fgetc(FILE *f)
-{
-  uint8_t  ch;
-	HAL_UART_Receive(&huart1,(uint8_t *)&ch, 1, 0xFFFF);
-	return  ch;
+unsigned char data1=0, data2=0, data3=0;
+unsigned char update = 0;
+
+unsigned char askco2[7] = {0x42, 0x4D, 0xE3, 0x00, 0x00, 0x01, 0x72};
+unsigned char co2s[12]={0}, co2state=0;
+uint16_t co2=0, lastco2=0;
+uint32_t now=0, last=0;
+
+void dealco2(){
+	//42 4D 00 08 0A 4D 3C 7F 0A EA 02 9D 
+	co2s[co2state++] = data3;
+	if(co2state == 1 && co2s[0] != 0x42) co2state = 0; //起始符1
+	if(co2state == 2 && co2s[1] != 0x4d) co2state = 0; //起始符1
+	if(co2state == 12){
+		co2 = (co2s[4]<<8) + co2s[5];
+		co2state = 0;	//接收完毕
+		if(co2 != lastco2){
+			lastco2 = co2;
+			update = 1;
+		}
+	}
+}
+
+unsigned char pm[32]={0}, pmstate=0;
+uint16_t pm1_0=0, pm2_5=0, pm10=0;
+
+void dealpm(){
+	// 42 4D 00 1C 00 09 00 0B 00 0C 00 09 00 0B 00 0C 09 5A 01 E3 00 2B 00 04 00 01 00 00 91 00 02 F3 
+	pm[pmstate++] = data2;
+	if(pmstate == 1 && pm[0] != 0x42) pmstate = 0; //起始符1
+	if(pmstate == 2 && pm[1] != 0x4d) pmstate = 0; //起始符1
+	if(pmstate == 32){
+		pm1_0 = (pm[10]<<8) + pm[11];
+		pm2_5 = (pm[12]<<8) + pm[13];
+		pm10 = (pm[14]<<8) + pm[15];
+		pmstate = 0;	//接收完毕
+		update = 1;
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if(huart->Instance == USART1) {
+		HAL_UART_Transmit(huart, &data1, 1, 0);
+		HAL_UART_Receive_IT(huart, &data1, 1);
+	}else if(huart->Instance == USART2) {
+		dealpm();
+		HAL_UART_Receive_IT(huart, &data2, 1);
+	}else if(huart->Instance == USART3) {
+		dealco2();
+		HAL_UART_Receive_IT(huart, &data3, 1);
+	}
+}
+
+__forceinline void set_bit(unsigned char *data, unsigned char bit, unsigned char value){
+	if(value == 0) *data &= ~(1<<bit);
+	else           *data |=  (1<<bit);
+}
+
+// Color Map for aqi
+uint32_t Good        = 0x009966;
+uint32_t Moderate    = 0xFFDE33;
+uint32_t Unhealthy1  = 0xFF9933;
+uint32_t Unhealthy2  = 0xCC0033;
+uint32_t Unhealthy3  = 0x660099;
+uint32_t Hazardous   = 0x7E0023;
+uint32_t *colortable[6] = {&Good, &Moderate, &Unhealthy1, &Unhealthy2, &Unhealthy3, &Hazardous}, colorindex=0;
+uint8_t colors[15]={0};
+uint8_t spaces[10]={0};
+
+void set_color(uint32_t color){
+	HAL_SPI_Transmit(&hspi2, spaces, 10, 0xFF);
+	
+	uint8_t i=0, j=0;
+	for(i=0; i<24; i++){
+		if( color&&0x01 == 0){
+			set_bit(colors+(j/8), j%8, 1);j++;
+			set_bit(colors+(j/8), j%8, 1);j++;
+			set_bit(colors+(j/8), j%8, 1);j++;
+			set_bit(colors+(j/8), j%8, 1);j++;
+			set_bit(colors+(j/8), j%8, 0);j++;
+		}else{
+			set_bit(colors+(j/8), j%8, 1);j++;
+			set_bit(colors+(j/8), j%8, 0);j++;
+			set_bit(colors+(j/8), j%8, 0);j++;
+			set_bit(colors+(j/8), j%8, 0);j++;
+			set_bit(colors+(j/8), j%8, 0);j++;
+		}
+		color = color >> 1;
+	}
+	HAL_SPI_Transmit(&hspi2, colors, 15, 0xFF);
 }
 
 /* USER CODE END 0 */
@@ -80,7 +165,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -93,15 +178,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM3_Init();
+  MX_SPI2_Init();
 
   /* USER CODE BEGIN 2 */
-
+	HAL_UART_Receive_IT(&huart1, &data1, 1);
+	HAL_UART_Receive_IT(&huart2, &data2, 1);
+	HAL_UART_Receive_IT(&huart3, &data3, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,9 +199,19 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 		
-		HAL_Delay(1000);
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		printf("test\n");
+		if(update == 1){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+			printf("PM1.0: %d, PM2.5: %d, PM10: %d, CO2: %d\n", pm1_0, pm2_5, pm10, co2);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+			update = 0;
+		}
+		
+		now = HAL_GetTick();
+		if(now - last > 1000){
+			HAL_UART_Transmit(&huart3, askco2, 7, 0xFF);
+			last = now;
+			set_color(*colortable[colorindex++ % 6]);
+		}
 		
   }
   /* USER CODE END 3 */
@@ -137,7 +234,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL8;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
