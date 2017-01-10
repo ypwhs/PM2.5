@@ -1,0 +1,71 @@
+Configuration	PM2.5
+STM32CubeMX 	4.18.0
+Date	01/09/2017
+MCU	STM32F103C8Tx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+I2C1	I2C	I2C1_SCL	PB6
+I2C1	I2C	I2C1_SDA	PB7
+RCC	Crystal/Ceramic Resonator	RCC_OSC_IN	PD0-OSC_IN
+RCC	Crystal/Ceramic Resonator	RCC_OSC_OUT	PD1-OSC_OUT
+SYS	No Debug	SYS_VS_ND	VP_SYS_VS_ND
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM3	PWM Generation CH1	TIM3_CH1	PA6
+TIM3	PWM Generation CH2	TIM3_CH2	PA7
+TIM3	PWM Generation CH3	TIM3_CH3	PB0
+TIM3	PWM Generation CH4	TIM3_CH4	PB1
+USART1	Asynchronous	USART1_RX	PA10
+USART1	Asynchronous	USART1_TX	PA9
+USART2	Asynchronous	USART2_RX	PA3
+USART2	Asynchronous	USART2_TX	PA2
+USART3	Asynchronous	USART3_RX	PB11
+USART3	Asynchronous	USART3_TX	PB10
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PC13-TAMPER-RTC	GPIO_Output	
+5	PD0-OSC_IN	RCC_OSC_IN	
+6	PD1-OSC_OUT	RCC_OSC_OUT	
+12	PA2	USART2_TX	
+13	PA3	USART2_RX	
+16	PA6	TIM3_CH1	
+17	PA7	TIM3_CH2	
+18	PB0	TIM3_CH3	
+19	PB1	TIM3_CH4	
+21	PB10	USART3_TX	
+22	PB11	USART3_RX	
+30	PA9	USART1_TX	
+31	PA10	USART1_RX	
+42	PB6	I2C1_SCL	
+43	PB7	I2C1_SDA	
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : PM2.5
+Project Folder : \\Mac\Home\Desktop\PM2.5\PM2.5
+Toolchain / IDE : MDK-ARM V5
+Firmware Package Name and Version : STM32Cube FW_F1 V1.4.0
+
+
+Code Generation Settings : 
+STM32Cube Firmware Library Package : Copy all used libraries into the project folder
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : Balanced Size/Speed
+
+
+
+
+
+
