@@ -94,7 +94,7 @@ void udpconnect(){
     serveraddr_local.sin_port = htons(20160);
 
     sockfd_remote = socket(AF_INET, SOCK_DGRAM, 0);
-    server = (struct hostent *)gethostbyname("192.168.2.66");
+    server = (struct hostent *)gethostbyname("ypw.io");
     bzero((char *) &serveraddr_remote, sizeof(serveraddr_remote));
     serveraddr_remote.sin_family = AF_INET;
     bcopy((char *)(server->h_addr),

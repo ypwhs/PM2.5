@@ -1,0 +1,267 @@
+
+{% extends "header.html" %}
+{% block body %}
+
+<div id="pm1_0" style="width: 600px;height:400px;"></div>
+<div id="pm2_5" style="width: 600px;height:400px;"></div>
+<div id="pm10" style="width: 600px;height:400px;"></div>
+<div id="co2" style="width: 600px;height:400px;"></div>
+
+<script type="text/javascript">
+    var date = {{ date|safe }};
+    var option = {
+        tooltip: {
+            trigger: 'axis',
+            position: function (pt) {
+                return [pt[0], '10%'];
+            }
+        },
+        title: {
+            left: 'left',
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: date
+        },
+        yAxis: {
+            type: 'value',
+            boundaryGap: [0, '100%']
+        },
+        toolbox: {
+            left: 'center',
+            feature: {
+                dataZoom: {
+                    yAxisIndex: 'none'
+                },
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        dataZoom: [{
+            type: 'inside',
+            start: 0,
+            end: 100
+        }, {
+            start: 0,
+            end: 100,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }],
+        series: [{
+            name:'PM2.5',
+            type:'line',
+            smooth:true,
+            symbol: 'none',
+            sampling: 'average',
+            itemStyle: {
+                normal: {
+                    color: 'rgb(255, 70, 131)'
+                }
+            },
+        }]
+    };
+
+    var pm1_0_option = option;
+    pm1_0_option.visualMap = {
+        top: 0,
+        right: 0,
+        pieces: [{
+            gt: 0,
+            lte: 35,
+            color: '#00E400'
+        }, {
+            gt: 35,
+            lte: 75,
+            color: '#FFFF00'
+        }, {
+            gt: 75,
+            lte: 115,
+            color: '#FF7E00'
+        }, {
+            gt: 115,
+            lte: 150,
+            color: '#FF0000'
+        }, {
+            gt: 150,
+            lte: 250,
+            color: '#99004C'
+        }, {
+            gt: 250,
+            color: '#7E0023'
+        }],
+        outOfRange: {
+            color: '#999'
+        }
+    };
+    pm1_0_option.series[0].markLine = {
+        silent: true,
+        data: [{
+            yAxis: 35
+        }, {
+            yAxis: 75
+        }, {
+            yAxis: 115
+        }, {
+            yAxis: 150
+        }, {
+            yAxis: 250
+        }]
+    };
+    pm1_0_option.title.text = "PM1.0";
+    pm1_0_option.series[0].data = {{ pm1_0|safe }};
+    echarts.init(document.getElementById('pm1_0')).setOption(pm1_0_option);
+
+    var pm2_5_option = option;
+    pm2_5_option.visualMap = {
+        top: 0,
+        right: 0,
+        pieces: [{
+            gt: 0,
+            lte: 35,
+            color: '#00E400'
+        }, {
+            gt: 35,
+            lte: 75,
+            color: '#FFFF00'
+        }, {
+            gt: 75,
+            lte: 115,
+            color: '#FF7E00'
+        }, {
+            gt: 115,
+            lte: 150,
+            color: '#FF0000'
+        }, {
+            gt: 150,
+            lte: 250,
+            color: '#99004C'
+        }, {
+            gt: 250,
+            color: '#7E0023'
+        }],
+        outOfRange: {
+            color: '#999'
+        }
+    };
+    pm2_5_option.series[0].markLine = {
+        silent: true,
+        data: [{
+            yAxis: 35
+        }, {
+            yAxis: 75
+        }, {
+            yAxis: 115
+        }, {
+            yAxis: 150
+        }, {
+            yAxis: 250
+        }]
+    };
+    pm2_5_option.title.text = "PM2.5";
+    pm2_5_option.series[0].data = {{ pm2_5|safe }};
+    echarts.init(document.getElementById('pm2_5')).setOption(pm2_5_option);
+
+    var pm10_option = option;
+    pm10_option.visualMap = {
+        top: 0,
+        right: 0,
+        pieces: [{
+            gt: 0,
+            lte: 50,
+            color: '#00E400'
+        }, {
+            gt: 50,
+            lte: 150,
+            color: '#FFFF00'
+        }, {
+            gt: 150,
+            lte: 250,
+            color: '#FF7E00'
+        }, {
+            gt: 250,
+            lte: 350,
+            color: '#FF0000'
+        }, {
+            gt: 350,
+            lte: 420,
+            color: '#99004C'
+        }, {
+            gt: 420,
+            color: '#7E0023'
+        }],
+        outOfRange: {
+            color: '#999'
+        }
+    };
+    pm10_option.series[0].markLine = {
+        silent: true,
+        data: [{
+            yAxis: 50
+        }, {
+            yAxis: 150
+        }, {
+            yAxis: 250
+        }, {
+            yAxis: 350
+        }, {
+            yAxis: 420
+        }]
+    };
+    pm10_option.title.text = "PM10";
+    pm10_option.series[0].data = {{ pm10|safe }};
+    echarts.init(document.getElementById('pm10')).setOption(pm10_option);
+
+    var co2_option = option;
+    co2_option.visualMap = {
+        top: 0,
+        right: 0,
+        pieces: [{
+            gt: 0,
+            lte: 450,
+            color: '#00E400'
+        }, {
+            gt: 450,
+            lte: 1000,
+            color: '#80FF80'
+        }, {
+            gt: 1000,
+            lte: 2000,
+            color: '#FFFF00'
+        }, {
+            gt: 2000,
+            lte: 5000,
+            color: '#FF7E00'
+        }, {
+            gt: 5000,
+            color: '#FF0000'
+        }],
+        outOfRange: {
+            color: '#999'
+        }
+    };
+    co2_option.series[0].markLine = {
+        silent: true,
+        data: [{
+            yAxis: 450
+        }, {
+            yAxis: 1000
+        }, {
+            yAxis: 2000
+        }, {
+            yAxis: 5000
+        }]
+    };
+    co2_option.title.text = "CO2";
+    co2_option.series[0].data = {{ co2|safe }};
+    echarts.init(document.getElementById('co2')).setOption(co2_option);
+
+</script>
+{% endblock %}

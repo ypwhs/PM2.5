@@ -64,6 +64,17 @@ void MainWindow::refresh()
 
     int level = 0;
 
+    if(pm1_0 <=  35)level = 0;
+    else if(pm1_0 <=  75)level = 1;
+    else if(pm1_0 <= 115)level = 2;
+    else if(pm1_0 <= 150)level = 3;
+    else if(pm1_0 <= 250)level = 4;
+    else level = 5;
+
+    QPalette palette = ui->lcdpm1_0->palette();
+    palette.setColor(palette.Background, color_table[level]);
+    ui->lcdpm1_0->setPalette(palette);
+
     if(pm2_5 <=  35)level = 0;
     else if(pm2_5 <=  75)level = 1;
     else if(pm2_5 <= 115)level = 2;
@@ -71,7 +82,7 @@ void MainWindow::refresh()
     else if(pm2_5 <= 250)level = 4;
     else level = 5;
 
-    QPalette palette = ui->lcdpm2_5->palette();
+    palette = ui->lcdpm2_5->palette();
     palette.setColor(palette.Background, color_table[level]);
     ui->lcdpm2_5->setPalette(palette);
 
