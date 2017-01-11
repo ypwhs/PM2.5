@@ -64,7 +64,7 @@ void MainWindow::refresh()
 
     int level = 0;
 
-         if(pm2_5 <=  35)level = 0;
+    if(pm2_5 <=  35)level = 0;
     else if(pm2_5 <=  75)level = 1;
     else if(pm2_5 <= 115)level = 2;
     else if(pm2_5 <= 150)level = 3;
@@ -75,7 +75,7 @@ void MainWindow::refresh()
     palette.setColor(palette.Background, color_table[level]);
     ui->lcdpm2_5->setPalette(palette);
 
-         if(pm10 <=  50)level = 0;
+    if(pm10 <=  50)level = 0;
     else if(pm10 <= 150)level = 1;
     else if(pm10 <= 250)level = 2;
     else if(pm10 <= 350)level = 3;
@@ -86,7 +86,7 @@ void MainWindow::refresh()
     palette.setColor(palette.Background, color_table[level]);
     ui->lcdpm10->setPalette(palette);
 
-         if(co2 <=  450)level = 0;
+    if(co2 <=  450)level = 0;
     else if(co2 <= 1000)level = 6;
     else if(co2 <= 2000)level = 1;
     else if(co2 <= 5000)level = 2;

@@ -10,17 +10,13 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
-char hostname[] = "127.0.0.1";
-int portno = 20160;
-struct sockaddr_in serveraddr;
-int serverlen;
+#include <time.h>
 
 pthread_t thread_askco2;
 pthread_t thread_readco2;
 pthread_t thread_readpm;
 
-int UART_CO2 = -1, UART_PM = -1, sockfd = -1;
+int UART_CO2 = -1, UART_PM = -1;
 
 void msleep(unsigned long ms){
     usleep(ms*1000);
@@ -84,21 +80,41 @@ void error(char *msg) {
     exit(0);
 }
 
-int udpconnect(){
-    struct hostent *server;
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    server = (struct hostent *)gethostbyname(hostname);
-    bzero((char *) &serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
+int sockfd_local = -1, sockfd_remote = -1;
+struct sockaddr_in serveraddr_local, serveraddr_remote;
+
+void udpconnect(){
+    struct hostent * server;
+    sockfd_local = socket(AF_INET, SOCK_DGRAM, 0);
+    server = (struct hostent *)gethostbyname("127.0.0.1");
+    bzero((char *) &serveraddr_local, sizeof(serveraddr_local));
+    serveraddr_local.sin_family = AF_INET;
     bcopy((char *)(server->h_addr),
-        (char *)&serveraddr.sin_addr.s_addr, server->h_length);
-    serveraddr.sin_port = htons(portno);
-    serverlen = sizeof(serveraddr);
-    return sockfd;
+        (char *)&serveraddr_local.sin_addr.s_addr, server->h_length);
+    serveraddr_local.sin_port = htons(20160);
+
+    sockfd_remote = socket(AF_INET, SOCK_DGRAM, 0);
+    server = (struct hostent *)gethostbyname("192.168.2.66");
+    bzero((char *) &serveraddr_remote, sizeof(serveraddr_remote));
+    serveraddr_remote.sin_family = AF_INET;
+    bcopy((char *)(server->h_addr),
+        (char *)&serveraddr_remote.sin_addr.s_addr, server->h_length);
+    serveraddr_remote.sin_port = htons(20160);
 }
 
-void udpsend(unsigned char * data){
-    int n = sendto(sockfd, data, strlen(data), 0, (struct sockaddr *)&serveraddr, serverlen);
+unsigned long long GetTimeStamp() {
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return (unsigned long long)tv.tv_sec*1000 + tv.tv_usec/1000;
+}
+
+char buf[128], buf2[128];
+void udpsend(){
+    sprintf(buf, "PM1.0: %d, PM2.5: %d, PM10: %d, CO2: %d", pm1_0, pm2_5, pm10, co2);
+    sprintf(buf2, "%llu,%d,%d,%d,%d", GetTimeStamp(), pm1_0, pm2_5, pm10, co2);
+    
+    sendto(sockfd_local, buf, strlen(buf), 0, (struct sockaddr *)&serveraddr_local, sizeof(serveraddr_local));
+    sendto(sockfd_remote, buf2, strlen(buf2), 0, (struct sockaddr *)&serveraddr_remote, sizeof(serveraddr_remote));
 }
 
 int main() {
@@ -140,19 +156,15 @@ int main() {
     if(pthread_create(&thread_readpm, NULL, readpm, NULL) < 0)
         error("create thread error\n");
 
-    while(udpconnect() < 0){
-        printf("udp connect failed. rerty\n");
-        sleep(1);
-    }
+    udpconnect();
 
-    char buf[128];
+    
     while(1){
         if(update != 0){
             update = 0;
-            sprintf(buf, "PM1.0: %d, PM2.5: %d, PM10: %d, CO2: %d", pm1_0, pm2_5, pm10, co2);
+            udpsend();
             printf("%s\n", buf);
-            udpsend(buf);
-            msleep(10);
+            msleep(500);
         }
     }
     return 0;

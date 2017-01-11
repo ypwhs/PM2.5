@@ -160,7 +160,7 @@
      <rect>
       <x>10</x>
       <y>35</y>
-      <width>671</width>
+      <width>701</width>
       <height>111</height>
      </rect>
     </property>
@@ -243,7 +243,7 @@
      <rect>
       <x>255</x>
       <y>260</y>
-      <width>91</width>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -261,7 +261,7 @@
      <rect>
       <x>595</x>
       <y>260</y>
-      <width>91</width>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -279,7 +279,7 @@
      <rect>
       <x>255</x>
       <y>520</y>
-      <width>91</width>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -295,7 +295,7 @@
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>620</x>
       <y>520</y>
       <width>71</width>
       <height>41</height>
@@ -335,9 +335,9 @@
    <widget class="QLabel" name="label_time">
     <property name="geometry">
      <rect>
-      <x>710</x>
+      <x>690</x>
       <y>170</y>
-      <width>311</width>
+      <width>331</width>
       <height>151</height>
      </rect>
     </property>
