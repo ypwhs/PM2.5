@@ -1,22 +1,28 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <pthread.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+char hostname[] = "127.0.0.1";
+int portno = 20160;
+struct sockaddr_in serveraddr;
+int serverlen;
 
 pthread_t thread_askco2;
 pthread_t thread_readco2;
 pthread_t thread_readpm;
 
-int UART_CO2 = -1, UART_PM = -1;
+int UART_CO2 = -1, UART_PM = -1, sockfd = -1;
 
 void msleep(unsigned long ms){
-    // struct timespec req = {0};
-    // req.tv_sec = 0;
-    // req.tv_nsec = ms * 1000000L;
-    // nanosleep(&req, (struct timespec *)NULL);
     usleep(ms*1000);
 }
 
@@ -39,7 +45,7 @@ unsigned char read_one(int fd){
 int co2 = 0, lastco2 = 0;
 unsigned char co2s[12] = {0}, co2state = 0, update = 0;
 void *readco2(void * pvoid){
-    //42 4D 00 08 0A 4D 3C 7F 0A EA 02 9D 
+    //42 4D 00 08 0A 4D 3C 7F 0A EA 02 9D
     while(1){
         co2s[co2state++] = read_one(UART_CO2);
         if( (co2state == 1) && (co2s[0] != 0x42) ) co2state = 0;
@@ -58,7 +64,7 @@ void *readco2(void * pvoid){
 unsigned char pm[32] = {0}, pmstate = 0;
 int pm1_0=0, pm2_5=0, pm10=0;
 void *readpm(void * pvoid){
-    // 42 4D 00 1C 00 09 00 0B 00 0C 00 09 00 0B 00 0C 09 5A 01 E3 00 2B 00 04 00 01 00 00 91 00 02 F3 
+    // 42 4D 00 1C 00 09 00 0B 00 0C 00 09 00 0B 00 0C 09 5A 01 E3 00 2B 00 04 00 01 00 00 91 00 02 F3
     while(1){
         pm[pmstate++] = read_one(UART_PM);
         if( (pmstate == 1) && (pm[0] != 0x42) ) pmstate = 0;
@@ -71,6 +77,28 @@ void *readpm(void * pvoid){
             update = 1;
         }
     }
+}
+
+void error(char *msg) {
+    perror(msg);
+    exit(0);
+}
+
+int udpconnect(){
+    struct hostent *server;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    server = (struct hostent *)gethostbyname(hostname);
+    bzero((char *) &serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    bcopy((char *)(server->h_addr),
+        (char *)&serveraddr.sin_addr.s_addr, server->h_length);
+    serveraddr.sin_port = htons(portno);
+    serverlen = sizeof(serveraddr);
+    return sockfd;
+}
+
+void udpsend(unsigned char * data){
+    int n = sendto(sockfd, data, strlen(data), 0, (struct sockaddr *)&serveraddr, serverlen);
 }
 
 int main() {
@@ -102,26 +130,28 @@ int main() {
     options_pm.c_cc[VMIN] = 1;
     tcflush(UART_PM, TCIFLUSH);
     tcsetattr(UART_PM, TCSANOW, &options_pm);
-    
-    if(pthread_create(&thread_askco2, NULL, askco2, NULL) < 0){
-        printf("create thread error\n");
-        return -1;
+
+    if(pthread_create(&thread_askco2, NULL, askco2, NULL) < 0)
+        error("create thread error\n");
+
+    if(pthread_create(&thread_readco2, NULL, readco2, NULL) < 0)
+        error("create thread error\n");
+
+    if(pthread_create(&thread_readpm, NULL, readpm, NULL) < 0)
+        error("create thread error\n");
+
+    while(udpconnect() < 0){
+        printf("udp connect failed. rerty\n");
+        sleep(1);
     }
 
-    if(pthread_create(&thread_readco2, NULL, readco2, NULL) < 0){
-        printf("create thread error\n");
-        return -1;
-    }
-
-    if(pthread_create(&thread_readpm, NULL, readpm, NULL) < 0){
-        printf("create thread error\n");
-        return -1;
-    }
-
+    char buf[128];
     while(1){
         if(update != 0){
             update = 0;
-            printf("PM1.0: %d, PM2.5: %d, PM10: %d, CO2: %d\n", pm1_0, pm2_5, pm10, co2);
+            sprintf(buf, "PM1.0: %d, PM2.5: %d, PM10: %d, CO2: %d", pm1_0, pm2_5, pm10, co2);
+            printf("%s\n", buf);
+            udpsend(buf);
             msleep(10);
         }
     }
