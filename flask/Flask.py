@@ -54,13 +54,13 @@ def index_float(hour):
 def index_hour(hour):
     before = int(time.time()*1000) - hour*3600*1000
     data = query_db('select * from pm where timestamp>%d' % before)
+    while len(data) > 10000:
+        data = data[::2]
     times = map(lambda x:x['timestamp'], data)
     pm1_0 = map(lambda x:x['pm1_0'], data)
     pm2_5 = map(lambda x:x['pm2_5'], data)
     pm10 = map(lambda x:x['pm10'], data)
     co2 = map(lambda x:x['co2'], data)
-    times = map(lambda x:datetime.datetime.fromtimestamp(x/1000).strftime('%Y-%m-%d %H:%M:%S'), times)
-    print times
     return render_template('chart.html', date=times, pm1_0=pm1_0, pm2_5=pm2_5, pm10=pm10, co2=co2)
 
 @app.errorhandler(404)

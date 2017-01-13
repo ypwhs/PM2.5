@@ -121,11 +121,6 @@ void MainWindow::receive()
     }
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    exit(0);
-}
-
 MainWindow::~MainWindow()
 {
     delete ui;
