@@ -6,10 +6,12 @@ http://pm.ypw.io
 
 ## 硬件
 
-硬件使用了：
-* PMS5003 和	DS-CO2-20 传感器。
-* NanoPi2
-* NanoPi2 7寸屏
+| 名称       | 型号        | 价格（元） | 通讯   | 图片                                       |
+| -------- | --------- | ----- | ---- | ---------------------------------------- |
+| NanoPi2  | NanoPi2   | 199   | ssh  | [<img width=400px src= https://img.alicdn.com/imgextra/i1/73291228/TB2aDndhpXXXXa9XXXXXXXXXXXX_!!73291228.jpg>](https://item.taobao.com/item.htm?id=524842034015) |
+| PM2.5传感器 | PMS5003   | 110   | 串口   | [<img width=400px src=https://img.alicdn.com/imgextra/i1/2681925680/TB2W_i9nVXXXXXaXFXXXXXXXXXX_!!2681925680.jpg>](https://item.taobao.com/item.htm?id=524354539294) |
+| 二氧化碳传感器  | DS-CO2-20 | 198   | 串口   | [<img width=400px src=https://img.alicdn.com/imgextra/i4/2681925680/TB2qhPAacgd61BjSZFPXXbVVFXa_!!2681925680.jpg>](https://item.taobao.com/item.htm?id=540405255399) |
+| 7寸屏      | X710      | 160   | 排线   | [<img width=400px src= https://img.alicdn.com/imgextra/i3/73291228/TB2s.1FjpXXXXXQXXXXXXXXXXXX_!!73291228.jpg>](https://item.taobao.com/item.htm?id=526058309474) |
 
 ## 软件
 
