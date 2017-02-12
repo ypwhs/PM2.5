@@ -56,12 +56,13 @@ def index_hour(hour):
     data = query_db('select * from pm where timestamp>%d' % before)
     while len(data) > 10000:
         data = data[::2]
-    times = map(lambda x:x['timestamp'], data)
-    pm1_0 = map(lambda x:x['pm1_0'], data)
-    pm2_5 = map(lambda x:x['pm2_5'], data)
-    pm10 = map(lambda x:x['pm10'], data)
-    co2 = map(lambda x:x['co2'], data)
+    times = [x['timestamp'] for x in data]
+    pm1_0 = [x['pm1_0'] for x in data]
+    pm2_5 = [x['pm2_5'] for x in data]
+    pm10 = [x['pm10'] for x in data]
+    co2 = [x['co2'] for x in data]
     return render_template('chart.html', date=times, pm1_0=pm1_0, pm2_5=pm2_5, pm10=pm10, co2=co2)
+
 
 @app.errorhandler(404)
 def page_not_found(error):
